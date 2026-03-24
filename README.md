@@ -9,7 +9,7 @@ This project demonstrates real-world frontend architecture patterns such as glob
 ---
 
 ## 🌐 Live Demo
-
+https://pratham29es11.github.io/employee-management-react/
 ---
 
 ## 🚀 Core Features
