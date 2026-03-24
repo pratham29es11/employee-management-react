@@ -6,55 +6,50 @@ import { AuthContext } from "./context/AuthProvider";
 
 const App = () => {
   const [user, setUser] = useState(null);
-  const [loggedUserData, setLoggedUserData] = useState(null);
-
-  const [authData, setAuthData] = useContext(AuthContext);
+  const [authData] = useContext(AuthContext);
 
   useEffect(() => {
-    if (authData) {
-      const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-      if (loggedInUser) {
-        setUser(loggedInUser.role);
-        setLoggedUserData(loggedInUser.data);
-      } else {
-        setUser(null);
-        setLoggedUserData(null);
-      }
-    }
-  }, [authData]);
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (loggedInUser) setUser(loggedInUser.role);
+  }, []);
 
   const handleLogin = (email, password) => {
     if (email === "admin@example.com" && password === "123") {
       setUser("admin");
-      const adminData = JSON.parse(localStorage.getItem("admin")) || "";
-      setLoggedUserData(adminData[0]);
+      localStorage.setItem("loggedInUser", JSON.stringify({ role: "admin" }));
+      return;
+    }
+
+    const employee = authData?.find(
+      (e) => e.email === email && e.password === password,
+    );
+
+    if (employee) {
+      setUser("employee");
       localStorage.setItem(
         "loggedInUser",
-        JSON.stringify({ role: "admin", data: adminData[0] }),
+        JSON.stringify({ role: "employee", data: employee }),
       );
-    } else if (authData) {
-      const employee = authData.find(
-        (e) => e.email === email && e.password === password,
-      );
-      if (employee) {
-        setUser("employee");
-        setLoggedUserData(employee);
-        localStorage.setItem(
-          "loggedInUser",
-          JSON.stringify({ role: "employee", data: employee }),
-        );
-        return;
-      }
-    } else alert("Invalid Credentials");
+      return;
+    }
+
+    alert("Invalid Credentials");
   };
+
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+  const currentEmployee =
+    user === "employee"
+      ? authData?.find((e) => e.id === loggedInUser?.data?.id)
+      : null;
 
   return (
     <>
       {!user && <Login handleLogin={handleLogin} />}
       {user == "admin" ? (
-        <AdminDashboard setUser={setUser} data={loggedUserData} />
+        <AdminDashboard setUser={setUser} />
       ) : user == "employee" ? (
-        <EmployeeDashboard setUser={setUser} data={loggedUserData} />
+        <EmployeeDashboard setUser={setUser} data={currentEmployee} />
       ) : null}
     </>
   );
